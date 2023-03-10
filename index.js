@@ -23,7 +23,7 @@ mongoose.connect(connectionstring)
 let db = mongoose.connection
 
 //check if connection to mongodb database is success
-db.once('open', ()=>{
+db.once('open', () => {
     console.log("Connected to mongodb database in cloud!")
 })
 
@@ -38,7 +38,7 @@ DELETE -> delete data
 */
 
 //GET Request handler for /
-app.get("/", (request, response)=>{
+app.get("/", (request, response) => {
     console.log("Request received")
     console.log("GET")
     console.log(request.url)
@@ -46,7 +46,7 @@ app.get("/", (request, response)=>{
 })
 
 //POST Request handler for /
-app.post("/", (request, response)=>{
+app.post("/", (request, response) => {
     console.log("Request received")
     console.log("POST")
     console.log(request.url)
@@ -54,7 +54,7 @@ app.post("/", (request, response)=>{
 })
 
 //GET Request handler for /welcome
-app.get("/welcome", (request, response)=>{
+app.get("/welcome", (request, response) => {
     console.log("Request received")
     console.log("GET")
     console.log(request.url)
@@ -62,7 +62,7 @@ app.get("/welcome", (request, response)=>{
 })
 
 //PUT Request handler for /welcome
-app.put("/welcome", (request, response)=>{
+app.put("/welcome", (request, response) => {
     console.log("Request received")
     console.log("PUT")
     console.log(request.url)
@@ -70,7 +70,7 @@ app.put("/welcome", (request, response)=>{
 })
 
 //POST Request handler for /add/friend
-app.post("/add/song", (request, response)=>{
+app.post("/add/song", (request, response) => {
     console.log("Request received")
     console.log(request.url)
     //read the request body (received along with request)
@@ -84,50 +84,92 @@ app.post("/add/song", (request, response)=>{
     console.log(newSong)
     //save the newSong in mongodb database
     newSong.save()
-            .then((data)=>{
-                response.json({
-                    "status":"success",
-                    "saved":data
-                })
+        .then((data) => {
+            response.json({
+                "status": "success",
+                "saved": data
             })
-            .catch((error)=>{
-                console.log(error)
-                response.json(error)
-            })
-    
- 
+        })
+        .catch((error) => {
+            console.log(error)
+            response.json(error)
+        })
+
+
 })
 
 //connect to mongodb and receive the list of documents from songs collection
-app.get("/get/songs", (request, response)=>{
+app.get("/get/songs", (request, response) => {
     console.log("Request received GET");
     console.log(request.url)
     //connect to mongodb to get all documents
     song.find({})
-        .then((data)=>{
+        .then((data) => {
             response.json(data)
         })
-        .catch((error)=>{
+        .catch((error) => {
             response.json(error)
         })
 
 })
 
 //get song by id
-app.get("/get/song/:myid", (request, response)=>{
+app.get("/get/song/:myid", (request, response) => {
     console.log(request.params)
     console.log(request.params.myid)
     song.findById(request.params.myid)
-        .then((data)=>{
+        .then((data) => {
             response.json(data)
         })
-        .catch((error)=>{
+        .catch((error) => {
             response.json(error)
         })
 })
 
+//delete song by id
+app.delete("/delete/song/:myid", (request, response) => {
+    console.log(request.params)
+    console.log(request.params.myid)
+    song.findByIdAndDelete(request.params.myid)
+        .then((data) => {
+            response.json({
+                "status": "deleted",
+                "data": data
+            })
+        })
+        .catch((error) => {
+            response.json(error)
+        })
+})
+
+//update song by id and request body
+app.put("/update/song/:id", (request, response) => {
+    console.log("id received: " + request.params.id)
+    console.log("request body received:")
+    console.log(request.body)
+    //updateOne(which, what)
+    song.updateOne({ _id: request.params.id }, { 
+        $set: 
+        { 
+            videoid: request.body.videoid, 
+            views: request.body.views, 
+            likes: request.body.likes 
+        } 
+    }).then((data)=>{
+        response.json({
+            "status":"updated",
+            "data":data
+        })
+    })
+        .catch((error)=>{
+            response.json(error)
+        })
 
 
-app.listen(PORT, ()=>{
+})
+
+
+
+app.listen(PORT, () => {
     console.log("Listening on port " + PORT)
 })
